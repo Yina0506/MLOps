@@ -1,0 +1,29 @@
+import torch
+import torch.nn as nn
+from torch.utils.data import DataLoader
+from models.model import ResNet18
+from data.make_dataset import corrupted_dataset
+
+def predict(
+    model: nn.Module,
+    dataloader: DataLoader, 
+    models: str,
+    data: str, 
+) -> None:
+    """Run prediction for a given model and dataloader.
+    
+    Args:
+        model: model to use for prediction
+        dataloader: dataloader with batches
+        models: model checkpoint path
+        data: test dataset path
+    Returns
+        Tensor of shape [N, d] where N is the number of samples and d is the output dimension of the model
+        The output dimension number d should be equal to the class number of the model
+    """
+    model.eval()
+    model = torch.load(models)
+    _, test_set = corrupted_dataset(path=data)
+    dataloader = DataLoader(test_set, batch_size=64, shuffle=False)
+
+    return torch.cat([model(batch) for batch in dataloader], 0)
